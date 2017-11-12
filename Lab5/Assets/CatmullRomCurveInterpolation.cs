@@ -24,7 +24,8 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 	Vector3 ComputePointOnCatmullRomCurve(double u, int segmentNumber)
 	{
 		Vector3 point = new Vector3();
-		print("Segment number: " + segmentNumber);
+
+		u = u - (int)u;
 
 		double tt = u * u;
 		double ttt = u * u * u;
@@ -40,9 +41,9 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 		float fq4 = (float)q4;
 
 
-		point.x = controlPoints [segmentNumber].x * fq1 + controlPoints [segmentNumber + 1].x * fq2 + controlPoints [segmentNumber + 2].x * fq3 + controlPoints [segmentNumber + 3].x * fq4;
-		point.y = controlPoints [segmentNumber].y * fq1 + controlPoints [segmentNumber + 1].y * fq2 + controlPoints [segmentNumber + 2].y * fq3 + controlPoints [segmentNumber + 3].y * fq4;
-		point.z = controlPoints [segmentNumber].z * fq1 + controlPoints [segmentNumber + 1].z * fq2 + controlPoints [segmentNumber + 2].z * fq3 + controlPoints [segmentNumber + 3].z * fq4;
+		point.x = 0.5f * controlPoints [segmentNumber % NumberOfPoints].x * fq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].x * fq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].x * fq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].x * fq4;
+		point.y = 0.5f * controlPoints [segmentNumber % NumberOfPoints].y * fq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].y * fq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].y * fq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].y * fq4;
+		point.z = 0.5f * controlPoints [segmentNumber % NumberOfPoints].z * fq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].z * fq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].z * fq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].z * fq4;
 
 
 
@@ -99,7 +100,7 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 		//comment
 
 		
-		Vector3 temp = ComputePointOnCatmullRomCurve(time, (int)(time % 8));
+		Vector3 temp = ComputePointOnCatmullRomCurve(time, (int)time);
 		transform.position = temp;
 	}
 }
