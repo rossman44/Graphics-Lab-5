@@ -24,6 +24,7 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 	Vector3 ComputePointOnCatmullRomCurve(double u, int segmentNumber)
 	{
 		Vector3 point = new Vector3();
+		print("Segment number: " + segmentNumber);
 
 		double tt = u * u;
 		double ttt = u * u * u;
@@ -98,7 +99,7 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 		//comment
 
 		
-		Vector3 temp = ComputePointOnCatmullRomCurve(time, (int)time);
+		Vector3 temp = ComputePointOnCatmullRomCurve(time, (int)(time % 8));
 		transform.position = temp;
 	}
 }
