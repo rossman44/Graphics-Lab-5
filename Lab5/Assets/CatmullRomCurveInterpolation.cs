@@ -34,17 +34,18 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 		double q2 = 3.0 * ttt - 5.0 * tt + 2.0;
 		double q3 = -3.0f * ttt + 4.0f * tt + u;
 		double q4 = ttt - tt;
-
+;
 		float fq1 = (float)q1;
 		float fq2 = (float)q2;
 		float fq3 = (float)q3;
 		float fq4 = (float)q4;
 
+		
+
 
 		point.x = 0.5f * controlPoints [segmentNumber % NumberOfPoints].x * fq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].x * fq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].x * fq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].x * fq4;
 		point.y = 0.5f * controlPoints [segmentNumber % NumberOfPoints].y * fq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].y * fq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].y * fq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].y * fq4;
 		point.z = 0.5f * controlPoints [segmentNumber % NumberOfPoints].z * fq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].z * fq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].z * fq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].z * fq4;
-
 
 
 		// TODO - compute and return a point as a Vector3		
@@ -53,6 +54,33 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 		//		 etc...
 		
 		return point;
+	}
+
+	Vector3 DirectionGeneration (double u, int segmentNumber) {
+		Vector3 direction = new Vector3();
+
+		u = u - (int)u;
+
+		double t = u;
+		double tt = u * u;
+		double ttt = u * u * u;
+
+		double qq1 = -3.0f * tt + 4.0f * t - 1;
+		double qq2 = 9.0f * tt - 10.0f + t;
+		double qq3 = -9.0 * tt + 8.0f * t + 1.0f;
+		double qq4 = 3.0f * tt - 2.0f * t;
+
+		float fqq1 = (float)qq1;
+		float fqq2 = (float)qq2;
+		float fqq3 = (float)qq3;
+		float fqq4 = (float)qq4;
+
+		direction.x = 0.5f * controlPoints [segmentNumber % NumberOfPoints].x * fqq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].x * fqq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].x * fqq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].x * fqq4;
+		direction.y = 0.5f * controlPoints [segmentNumber % NumberOfPoints].y * fqq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].y * fqq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].y * fqq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].y * fqq4;
+		direction.z = 0.5f * controlPoints [segmentNumber % NumberOfPoints].z * fqq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].z * fqq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].z * fqq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].z * fqq4;
+
+
+		return direction;
 	}
 	
 	void GenerateControlPointGeometry()
@@ -101,6 +129,9 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 
 		
 		Vector3 temp = ComputePointOnCatmullRomCurve(time, (int)time);
+		Vector3 temp2 = DirectionGeneration(time, (int)time);
 		transform.position = temp;
+		// transform.rotation = temp2;
+		transform.rotation = Quaternion.Euler(transform.rotation.x  + temp2.x, transform.rotation.y  + temp2.y, transform.rotation.z  + temp2.z);
 	}
 }
