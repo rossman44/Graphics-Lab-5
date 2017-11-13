@@ -28,14 +28,28 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 	{
 		Vector3 point = new Vector3();
 
-		u = u - (int)u;
+		int p1 = (int)u % NumberOfPoints;
+		int p2 = (p1 + 1) % NumberOfPoints;
+		int p3 = (p2 + 1) % NumberOfPoints;
+		int p0;
+		if (p1 >= 1) {
+			p0 = p1 - 1;
+		} else {
+			p0 = NumberOfPoints - 1;
+		}
 
-		double tt = u * u;
-		double ttt = u * u * u;
+		print (u);
+		print (p1);
 
-		double q1 = -ttt + 2.0 * tt - u;
+		double t = u - (int)u;
+
+
+		double tt = t * t;
+		double ttt = t * t * t;
+
+		double q1 = -ttt + 2.0 * tt - t;
 		double q2 = 3.0 * ttt - 5.0 * tt + 2.0;
-		double q3 = -3.0f * ttt + 4.0f * tt + u;
+		double q3 = -3.0f * ttt + 4.0f * tt + t;
 		double q4 = ttt - tt;
 ;
 		float fq1 = (float)q1;
@@ -43,17 +57,18 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 		float fq3 = (float)q3;
 		float fq4 = (float)q4;
 
-		
 
+		//print (u);
+		//print (segmentNumber);
 
-		point.x = 0.5f * controlPoints [segmentNumber % NumberOfPoints].x * fq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].x * fq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].x * fq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].x * fq4;
-		point.y = 0.5f * controlPoints [segmentNumber % NumberOfPoints].y * fq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].y * fq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].y * fq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].y * fq4;
-		point.z = 0.5f * controlPoints [segmentNumber % NumberOfPoints].z * fq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].z * fq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].z * fq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].z * fq4;
+		point.x = 0.25f * controlPoints [p0].x * fq1 + controlPoints [p1].x * fq2 + controlPoints [p2].x * fq3 + controlPoints [p3].x * fq4;
+		point.y = 0.25f * controlPoints [p0].y * fq1 + controlPoints [p1].y * fq2 + controlPoints [p2].y * fq3 + controlPoints [p3].y * fq4;
+		point.z = 0.25f * controlPoints [p0].z * fq1 + controlPoints [p1].z * fq2 + controlPoints [p2].z * fq3 + controlPoints [p3].z * fq4;
 
 		//print (segmentLength [segmentNumber]);
-		point.x = point.x * ((float)(segmentLength [segmentNumber]) / (float)longestSpline);
-		point.y = point.y * ((float)(segmentLength [segmentNumber]) / (float)longestSpline);
-		point.z = point.z * ((float)(segmentLength [segmentNumber]) / (float)longestSpline);
+		//point.x = point.x * ((float)(segmentLength [segmentNumber] % NumberOfPoints) / (float)longestSpline);
+		//point.y = point.y * ((float)(segmentLength [segmentNumber] % NumberOfPoints) / (float)longestSpline);
+		//point.z = point.z * ((float)(segmentLength [segmentNumber] % NumberOfPoints) / (float)longestSpline);
 
 		// TODO - compute and return a point as a Vector3		
 		// Hint: Points on segment number 0 start at controlPoints[0] and end at controlPoints[1]
@@ -72,9 +87,9 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 		double tt = u * u;
 		double ttt = u * u * u;
 
-		double qq1 = -3.0f * tt + 4.0f * t - 1;
+		double qq1 = -3.0f * tt + 4.0f * t - 1f;
 		double qq2 = 9.0f * tt - 10.0f + t;
-		double qq3 = -9.0 * tt + 8.0f * t + 1.0f;
+		double qq3 = -9.0f * tt + 8.0f * t + 1.0f;
 		double qq4 = 3.0f * tt - 2.0f * t;
 
 		float fqq1 = (float)qq1;
@@ -103,25 +118,30 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 	float CalculateSegmentLength(int segmentNumber) {
 		float segLength = 0.0f;
 		float count = 0f;
+		double pos = 0.005;
 		Vector3 targetPoint = new Vector3();
 		double t = time - (int)time;
-		Vector3 currentPoint = ComputePointOnCatmullRomCurve (time - t, segmentNumber);
+		//Vector3 currentPoint = ComputePointOnCatmullRomCurve ((double)segmentNumber + 0.1, segmentNumber);
+		//print (segmentNumber);
+		Vector3 currentPoint = controlPoints[segmentNumber];
 
 		while (count < 1.0f) {
-			targetPoint = ComputePointOnCatmullRomCurve (time, segmentNumber);
+			targetPoint = ComputePointOnCatmullRomCurve (pos, (segmentNumber) % NumberOfPoints);
+			//targetPoint = controlPoints[(pos + 0.005) % NumberOfPoints];
 			segLength = segLength + Mathf.Sqrt ((targetPoint.x - currentPoint.x) * (targetPoint.x - currentPoint.x)
 			+ (targetPoint.y - currentPoint.y) * (targetPoint.y - currentPoint.y)
 			+ (targetPoint.z - currentPoint.z) * (targetPoint.z - currentPoint.z));
-			print (segLength);
-			count += 0.005f;
+			//print (segLength);
+			count = count + 0.005f;
+			pos = pos + 0.005;
 			currentPoint = targetPoint;
 		}
-
+		//print (segLength);
 		return segLength;
 
 	}
 
-	float normaizeDistance(float position) {
+	float normalizeDistance(float position) {
 		int count = 0;
 		while ((double)position > segmentLength [count]) {
 			position = position - (float)segmentLength [count];
@@ -134,48 +154,83 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
+		for (double i = 0; i < 8; i += 0.05) {
+			
+		}
+
+
 		controlPoints = new Vector3[NumberOfPoints];
 
+		//start works as intended
 		// set points randomly...
-		controlPoints[0] = new Vector3(0,0,0);
-		for(int i = 1; i < NumberOfPoints; i++)
-		{
-			controlPoints[i] = new Vector3(Random.Range(MinX,MaxX),Random.Range(MinY,MaxY),Random.Range(MinZ,MaxZ));
-			segmentLength[i] = CalculateSegmentLength (i);
-			if (segmentLength [i] > longestSpline) {
-				longestSpline = segmentLength [i];
-			}
-		}
 
 
 
 //		controlPoints[0] = new Vector3(0,0,0);
-//		controlPoints[1] = new Vector3(0.5f,0,1);
-//		controlPoints[2] = new Vector3(1f,0,1.50f);
-//		controlPoints[3] = new Vector3(1f,0,1.75f);
-//		controlPoints[4] = new Vector3(1.80f,0,2.4f);
-//		controlPoints[5] = new Vector3(2.70f,0,3.00f);
-//		controlPoints[6] = new Vector3(3.50f,0,4.00f);
-//		controlPoints[7] = new Vector3(4.20f,0,5.00f);
+//		for(int i = 1; i < NumberOfPoints; i++)
+//		{
+//			controlPoints[i] = new Vector3(Random.Range(MinX,MaxX),Random.Range(MinY,MaxY),Random.Range(MinZ,MaxZ));
+//
+//		}
+			
+		controlPoints[0] = new Vector3(0,0,0);
+		controlPoints[1] = new Vector3(2f,1f,0);
+		controlPoints[2] = new Vector3(3f,3f,0);
+		controlPoints[3] = new Vector3(2f,4f,0);
+		controlPoints[4] = new Vector3(0f,5f,0);
+		controlPoints[5] = new Vector3(-2f,4f,0);
+		controlPoints[6] = new Vector3(-3f,3f,0);
+		controlPoints[7] = new Vector3(-2f,1f,0);
+//
 
-		
+//		controlPoints[0] = new Vector3(0,0,0);
+//		controlPoints[1] = new Vector3(0f,0,0);
+//		controlPoints[2] = new Vector3(2f,0,0);
+//		controlPoints[3] = new Vector3(3f,0,0);
+//		controlPoints[4] = new Vector3(4f,0,0);
+//		controlPoints[5] = new Vector3(5f,0,0);
+//		controlPoints[6] = new Vector3(6f,0,0);
+//		controlPoints[7] = new Vector3(6f,0,0);
+
+		for (int j = 0; j < NumberOfPoints; j++) {
+			segmentLength[j] = CalculateSegmentLength (j);
+			//print (segmentLength [j]);
+			if (segmentLength [j] > longestSpline) {
+				longestSpline = segmentLength [j];
+			}
+			//print (longestSpline);
+		}
+
+
+
 		GenerateControlPointGeometry();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		
+		Vector3 temp = new Vector3();
+		Vector3 temp2 = new Vector3 ();
+
 		time += DT;
 			
 		// TODO - use time to determine values for u and segment_number in this function call
 		//int u = (int)time;
 		//comment
 
-		
-		Vector3 temp = ComputePointOnCatmullRomCurve(time, (int)time);
-		Vector3 temp2 = DirectionGeneration(time, (int)time);
+		//can't normalize when finding point, so multiply transform
+
+//		if ((int)time < 6 && (int)time > 0) {
+//			temp = ComputePointOnCatmullRomCurve(time, (int)time);
+//			temp2 = DirectionGeneration(time, (int)time);
+//		}
+
+		temp = ComputePointOnCatmullRomCurve (time, (int)time);
+		//temp2 = DirectionGeneration(time, (int)time);
+
+		//Attempt to normalize temp vector
+
 		transform.position = temp;
 		// transform.rotation = temp2;
-		transform.rotation = Quaternion.Euler(transform.rotation.x  + temp2.x, transform.rotation.y  + temp2.y, transform.rotation.z  + temp2.z);
+		//transform.rotation = Quaternion.Euler(transform.rotation.x  + temp2.x, transform.rotation.y  + temp2.y, transform.rotation.z  + temp2.z);
 	}
 }
