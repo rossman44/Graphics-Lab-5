@@ -154,11 +154,6 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-		for (double i = 0; i < 8; i += 0.05) {
-			
-		}
-
-
 		controlPoints = new Vector3[NumberOfPoints];
 
 		//start works as intended
@@ -201,7 +196,15 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 			//print (longestSpline);
 		}
 
+		for (double i = 0; i < 8; i += 0.01) {
+			print("Trying to do it: " + i);
+			Vector3 temp = new Vector3();
+			temp = ComputePointOnCatmullRomCurve (i, (int)i);
 
+			GameObject tempcube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			tempcube.transform.localScale -= new Vector3(0.4f,0.4f,0.4f);
+			tempcube.transform.position = temp;
+		}
 
 		GenerateControlPointGeometry();
 	}
