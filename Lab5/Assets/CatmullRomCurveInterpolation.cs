@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class CatmullRomCurveInterpolation : MonoBehaviour {
 	
@@ -19,6 +20,8 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 
 	double longestSpline = 0;
 	double[] segmentLength = new double[8];
+
+	List<Vector3>[] positions = new List<Vector3>[8];
 	
 	/* Returns a point on a cubic Catmull-Rom/Blended Parabolas curve
 	 * u is a scalar value from 0 to 1
@@ -28,7 +31,7 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 	{
 		Vector3 point = new Vector3();
 
-		int p1 = (int)u % NumberOfPoints;
+		int p1 = (int)u;
 		int p2 = (p1 + 1) % NumberOfPoints;
 		int p3 = (p2 + 1) % NumberOfPoints;
 		int p0;
@@ -51,7 +54,7 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 		double q2 = 3.0 * ttt - 5.0 * tt + 2.0;
 		double q3 = -3.0f * ttt + 4.0f * tt + t;
 		double q4 = ttt - tt;
-;
+
 		float fq1 = (float)q1;
 		float fq2 = (float)q2;
 		float fq3 = (float)q3;
@@ -61,9 +64,9 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 		//print (u);
 		//print (segmentNumber);
 
-		point.x = 0.25f * controlPoints [p0].x * fq1 + controlPoints [p1].x * fq2 + controlPoints [p2].x * fq3 + controlPoints [p3].x * fq4;
-		point.y = 0.25f * controlPoints [p0].y * fq1 + controlPoints [p1].y * fq2 + controlPoints [p2].y * fq3 + controlPoints [p3].y * fq4;
-		point.z = 0.25f * controlPoints [p0].z * fq1 + controlPoints [p1].z * fq2 + controlPoints [p2].z * fq3 + controlPoints [p3].z * fq4;
+		point.x = 0.5f * (controlPoints [p0].x * fq1 + controlPoints [p1].x * fq2 + controlPoints [p2].x * fq3 + controlPoints [p3].x * fq4);
+		point.y = 0.5f * (controlPoints [p0].y * fq1 + controlPoints [p1].y * fq2 + controlPoints [p2].y * fq3 + controlPoints [p3].y * fq4);
+		point.z = 0.5f * (controlPoints [p0].z * fq1 + controlPoints [p1].z * fq2 + controlPoints [p2].z * fq3 + controlPoints [p3].z * fq4);
 
 		//print (segmentLength [segmentNumber]);
 		//point.x = point.x * ((float)(segmentLength [segmentNumber] % NumberOfPoints) / (float)longestSpline);
@@ -97,9 +100,9 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 		float fqq3 = (float)qq3;
 		float fqq4 = (float)qq4;
 
-		direction.x = 0.5f * controlPoints [segmentNumber % NumberOfPoints].x * fqq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].x * fqq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].x * fqq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].x * fqq4;
-		direction.y = 0.5f * controlPoints [segmentNumber % NumberOfPoints].y * fqq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].y * fqq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].y * fqq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].y * fqq4;
-		direction.z = 0.5f * controlPoints [segmentNumber % NumberOfPoints].z * fqq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].z * fqq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].z * fqq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].z * fqq4;
+		direction.x = 0.5f * (controlPoints [segmentNumber % NumberOfPoints].x * fqq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].x * fqq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].x * fqq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].x * fqq4);
+		direction.y = 0.5f * (controlPoints [segmentNumber % NumberOfPoints].y * fqq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].y * fqq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].y * fqq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].y * fqq4);
+		direction.z = 0.5f * (controlPoints [segmentNumber % NumberOfPoints].z * fqq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].z * fqq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].z * fqq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].z * fqq4);
 
 
 		return direction;
@@ -196,7 +199,17 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 			//print (longestSpline);
 		}
 
+		positions[0] = new List<Vector3>();
+		positions[1] = new List<Vector3>();
+		positions[2] = new List<Vector3>();
+		positions[3] = new List<Vector3>();
+		positions[4] = new List<Vector3>();
+		positions[5] = new List<Vector3>();
+		positions[6] = new List<Vector3>();
+		positions[7] = new List<Vector3>();
+
 		for (double i = 0; i < 8; i += 0.01) {
+			int truncate = (int)i;
 			print("Trying to do it: " + i);
 			Vector3 temp = new Vector3();
 			temp = ComputePointOnCatmullRomCurve (i, (int)i);
@@ -204,6 +217,8 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 			GameObject tempcube = GameObject.CreatePrimitive(PrimitiveType.Cube);
 			tempcube.transform.localScale -= new Vector3(0.4f,0.4f,0.4f);
 			tempcube.transform.position = temp;
+
+			positions[truncate].Add(temp);
 		}
 
 		GenerateControlPointGeometry();
@@ -228,12 +243,11 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 //		}
 
 		temp = ComputePointOnCatmullRomCurve (time, (int)time);
-		//temp2 = DirectionGeneration(time, (int)time);
+		temp2 = DirectionGeneration(time, (int)time);
 
 		//Attempt to normalize temp vector
 
 		transform.position = temp;
-		// transform.rotation = temp2;
-		//transform.rotation = Quaternion.Euler(transform.rotation.x  + temp2.x, transform.rotation.y  + temp2.y, transform.rotation.z  + temp2.z);
+		transform.rotation = Quaternion.Euler(transform.rotation.x  + temp2.x, transform.rotation.y  + temp2.y, transform.rotation.z  + temp2.z);
 	}
 }
