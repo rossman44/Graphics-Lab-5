@@ -16,6 +16,9 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 	
 	double time = 0;
 	const double DT = 0.01;
+
+	double longestSpline = 0;
+	double[] segmentLength = new double[8];
 	
 	/* Returns a point on a cubic Catmull-Rom/Blended Parabolas curve
 	 * u is a scalar value from 0 to 1
@@ -45,6 +48,10 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 		point.y = 0.5f * controlPoints [segmentNumber % NumberOfPoints].y * fq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].y * fq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].y * fq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].y * fq4;
 		point.z = 0.5f * controlPoints [segmentNumber % NumberOfPoints].z * fq1 + controlPoints [(segmentNumber + 1) % NumberOfPoints].z * fq2 + controlPoints [(segmentNumber + 2) % NumberOfPoints].z * fq3 + controlPoints [(segmentNumber + 3) % NumberOfPoints].z * fq4;
 
+		//print (segmentLength [segmentNumber]);
+		point.x = point.x * ((float)(segmentLength [segmentNumber]) / (float)longestSpline);
+		point.y = point.y * ((float)(segmentLength [segmentNumber]) / (float)longestSpline);
+		point.z = point.z * ((float)(segmentLength [segmentNumber]) / (float)longestSpline);
 
 
 		// TODO - compute and return a point as a Vector3		
@@ -64,7 +71,38 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 			tempcube.transform.position = controlPoints[i];
 		}	
 	}
-	
+
+	float CalculateSegmentLength(int segmentNumber) {
+		float segLength = 0.0f;
+		float count = 0f;
+		Vector3 targetPoint = new Vector3();
+		double t = time - (int)time;
+		Vector3 currentPoint = ComputePointOnCatmullRomCurve (time - t, segmentNumber);
+
+		while (count < 1.0f) {
+			targetPoint = ComputePointOnCatmullRomCurve (time, segmentNumber);
+			segLength = segLength + Mathf.Sqrt ((targetPoint.x - currentPoint.x) * (targetPoint.x - currentPoint.x)
+			+ (targetPoint.y - currentPoint.y) * (targetPoint.y - currentPoint.y)
+			+ (targetPoint.z - currentPoint.z) * (targetPoint.z - currentPoint.z));
+			print (segLength);
+			count += 0.005f;
+			currentPoint = targetPoint;
+		}
+
+		return segLength;
+
+	}
+
+	float normaizeDistance(float position) {
+		int count = 0;
+		while ((double)position > segmentLength [count]) {
+			position = position - (float)segmentLength [count];
+			count = count + 1;
+		}
+
+		return (float)count + (position / (float)segmentLength[count]);
+	}
+
 	// Use this for initialization
 	void Start () {
 
@@ -75,7 +113,13 @@ public class CatmullRomCurveInterpolation : MonoBehaviour {
 		for(int i = 1; i < NumberOfPoints; i++)
 		{
 			controlPoints[i] = new Vector3(Random.Range(MinX,MaxX),Random.Range(MinY,MaxY),Random.Range(MinZ,MaxZ));
+			segmentLength[i] = CalculateSegmentLength (i);
+			if (segmentLength [i] > longestSpline) {
+				longestSpline = segmentLength [i];
+			}
 		}
+
+
 
 //		controlPoints[0] = new Vector3(0,0,0);
 //		controlPoints[1] = new Vector3(0.5f,0,1);
